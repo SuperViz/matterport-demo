@@ -3,3 +3,4 @@ env.js
 .vscode/settings.json
 modules/matterport/.DS_Store
 .DS_Store
+.gitignore
