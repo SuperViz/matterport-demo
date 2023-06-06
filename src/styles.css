@@ -1,0 +1,184 @@
+* {
+   box-sizing: border-box;
+}
+
+html,
+body {
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+   background-color: #6210cc;
+   margin: 0;
+}
+
+main {
+   width: 100%;
+   height: 100%;
+}
+
+#loader-section {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   height: 100vh;
+}
+
+#loader-section.hide {
+   display: none;
+}
+
+.loader {
+   border: 4px solid #6210cc;
+   border-top: 4px solid #c1fbdf;
+   border-radius: 50%;
+   width: 60px;
+   height: 60px;
+   animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+   0% {
+      transform: rotate(0deg);
+   }
+
+   100% {
+      transform: rotate(360deg);
+   }
+}
+
+#content-section {
+   margin: 0;
+   padding: 0;
+   margin-block-start: 0;
+   margin-block-end: 0;
+}
+
+aside {
+   padding: 0;
+   background-color: #fafafc;
+   overflow: auto;
+}
+
+section {
+   width: 100%;
+   height: calc(100% - 0px);
+
+   display: grid;
+   grid-template-columns: 320px 1fr;
+   grid-template-rows: auto;
+
+   gap: 0px;
+   position: relative;
+}
+
+section.hidden-menu {
+   grid-template-columns: 0 1fr;
+}
+
+section.hidden-menu #projects-button {
+   left: 8px;
+   position: absolute;
+   background-size: 18px;
+   background-image: url(https://production.cdn.superviz.com/static/copy-icon.svg);
+   top: 68px;
+}
+section.hidden-menu #invite-button {
+   margin-top: 224px;
+   border-radius: 20px;
+   cursor: pointer;
+   border: 0px;
+   background-repeat: no-repeat;
+   width: 34px;
+   height: 34px;
+   background-position: center;
+   background-color: #e9e5ef;
+   left: 8px;
+   position: absolute;
+   background-size: 18px;
+   background-position-x: 10px;
+   background-image: url(https://production.cdn.superviz.com/static/sdk-invite-icon.svg);
+}
+
+#invite-button {
+   display: flex;
+}
+
+#projects-button {
+   border-radius: 20px;
+   background-size: 10px;
+   cursor: pointer;
+   border: 0px;
+   background-repeat: no-repeat;
+   width: 34px;
+   height: 34px;
+   background-position: center;
+   background-color: #e9e5ef;
+   background-image: url(https://production.cdn.superviz.com/static/close-button-sdk-matterport.svg);
+}
+
+aside .projects {
+   height: 18px;
+   padding: 16px;
+   background-color: #e9e5ef;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   font-family: 'Roboto';
+   font-size: 12px;
+   font-weight: 700;
+}
+
+aside .demo #projects-list {
+   padding: 28px 57px 16px 16px;
+   width: 100%;
+   overflow-x: hidden;
+   overflow-y: auto;
+   height: calc(100vh - 120px);
+   display: flex !important;
+   flex-direction: column !important;
+   justify-content: flex-start !important;
+   align-content: flex-start !important;
+   align-items: flex-start !important;
+   flex-wrap: nowrap !important;
+}
+
+aside .demo #projects-list .link {
+   width: 100%;
+   display: flex !important;
+   flex-direction: row !important;
+   justify-content: flex-start !important;
+   align-content: center !important;
+   align-items: center !important;
+   flex-wrap: nowrap !important;
+   margin-bottom: 12px;
+   cursor: pointer;
+   text-decoration: none;
+}
+
+aside .demo #projects-list .link:hover {
+   color: #7e7a88;
+   text-decoration: none;
+}
+
+aside .demo #projects-list .link .project-thumb {
+   position: relative;
+}
+
+aside .demo #projects-list .link .project-thumb img {
+   width: 111px;
+   height: 55px;
+}
+
+aside .demo #projects-list .link .project-name {
+   color: #7e7a88;
+   font-family: sans-serif;
+   font-size: 12px;
+   font-weight: 400;
+   width: 125px;
+   height: 48px;
+   padding-left: 8px;
+}
+
+.active {
+   color: #6210cc !important;
+}
