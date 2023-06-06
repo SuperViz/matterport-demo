@@ -73,7 +73,7 @@ class App {
    }
 
    async onContentLoaded(e, payload) {
-      // Maybe move this one::
+      //Save content ::
       currentContent = payload.model;
 
       // load SuperViz plugin into mp SDK ::
