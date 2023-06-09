@@ -64,7 +64,7 @@ class App {
    }
 
    changeProject(e, id) {
-      // unload SuperViz plugin before we change project ::
+      // let sync engine know we updated the content ::
       if (currentContent != id) {
          superviz_sdk.setSyncProperty(SuperViz.CONTENT_CHANGED, id);
       }
