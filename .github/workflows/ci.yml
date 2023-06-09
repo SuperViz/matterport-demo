@@ -1,0 +1,40 @@
+name: Publish Matterport Demo
+on:
+  push:
+    branches:
+      - main
+jobs:
+  main:
+    if: "github.ref == 'refs/heads/main'"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+      - name: Build package
+        run: |
+          touch env.js && echo "echo \"export const DEVELOPER_KEY = '${{ secrets.DEVELOPER_KEY }}'; export const MATTERPORT_KEY = '${{ secrets.MATTERPORT_KEY }}';\" > env.js" | bash -
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy static site to S3 bucket
+        run: aws s3 sync ./ s3://matterport.superviz.com/ --delete
+      - name: Create Cloudfront invalidation
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.DISTRIBUTION_ID }} --paths "/*"
+  slackNotification:
+    needs: main
+    name: Slack Notification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_ICON: https://avatars.slack-edge.com/2020-11-18/1496892993975_af721d1c045bea2d5a46_48.png
+          MSG_MINIMAL: true
+          SLACK_USERNAME: Deploy Matterport Demo
