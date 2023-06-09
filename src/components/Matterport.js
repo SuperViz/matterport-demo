@@ -3,6 +3,7 @@ import Menu from './Menu.js';
 import { MATTERPORT_KEY } from '../../env.js';
 
 export const MATTERPORT_LOADED = 'matterport_loaded';
+export const MATTERPORT_DESTROYED = 'matterport_destroyed';
 
 let model = null;
 let showcase = null;
@@ -24,6 +25,7 @@ class Matterport {
    async changeProject(e, id) {
       if (model != id) {
          await this.destroyMatterport();
+         PubSub.publish(MATTERPORT_DESTROYED, '');
          this.createElement(id);
       } else {
          console.log('model already loaded inside MP');
@@ -98,6 +100,9 @@ class Matterport {
 
    static get MATTERPORT_LOADED() {
       return MATTERPORT_LOADED;
+   }
+   static get MATTERPORT_DESTROYED() {
+      return MATTERPORT_DESTROYED;
    }
 }
 export default Matterport;

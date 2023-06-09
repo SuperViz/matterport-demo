@@ -66,8 +66,6 @@ class App {
    changeProject(e, id) {
       // unload SuperViz plugin before we change project ::
       if (currentContent != id) {
-         SuperViz.unloadPlugin();
-
          superviz_sdk.setSyncProperty(SuperViz.CONTENT_CHANGED, id);
       }
    }
@@ -75,9 +73,6 @@ class App {
    async onContentLoaded(e, payload) {
       //Save content ::
       currentContent = payload.model;
-
-      // load SuperViz plugin into mp SDK ::
-      SuperViz.loadPlugin(payload.sdk);
    }
 }
 export default App;

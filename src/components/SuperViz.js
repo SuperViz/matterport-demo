@@ -1,4 +1,5 @@
 import { DEVELOPER_KEY } from '../../env.js';
+import Matterport from './Matterport.js';
 
 const SuperViz = (function () {
    // let ::
@@ -29,6 +30,10 @@ const SuperViz = (function () {
          camsOff: false,
       });
 
+      // Pubsub - listen for event: Matterport loaded & unloaded ::
+      PubSub.subscribe(Matterport.MATTERPORT_LOADED, loadPluginSDK);
+      PubSub.subscribe(Matterport.MATTERPORT_DESTROYED, unloadPluginSDK);
+
       sdk.subscribe(SuperVizSdk.MeetingEvent.MY_PARTICIPANT_JOINED, onMyParticipantJoined);
    };
 
@@ -37,9 +42,9 @@ const SuperViz = (function () {
       PubSub.publish(MY_PARTICIPANT_JOINED_SDK, { sdk: sdk, participant: participant });
    };
 
-   const loadPluginSDK = function (mp_sdk) {
+   const loadPluginSDK = function (e, payload) {
       // App is ready and I'm connected to the SDK. Now init the Plugin ::
-      plugin = new window.MatterportPlugin(mp_sdk);
+      plugin = new window.MatterportPlugin(payload.sdk);
 
       matterportPluginInstance = sdk.loadPlugin(plugin, {
          avatarConfig: {
@@ -60,8 +65,6 @@ const SuperViz = (function () {
    // Public
    return {
       init: (userId, roomid, name, userType) => initSDK(userId, roomid, name, userType),
-      loadPlugin: (mp_sdk) => loadPluginSDK(mp_sdk),
-      unloadPlugin: () => unloadPluginSDK(),
       MY_PARTICIPANT_JOINED: MY_PARTICIPANT_JOINED_SDK,
       CONTENT_CHANGED: CONTENT_CHANGED_SDK,
    };
