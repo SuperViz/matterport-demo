@@ -28,6 +28,8 @@ const SuperViz = (function () {
          enableGoTo: true,
          enableGather: true,
          camsOff: false,
+         layoutPosition: 'center',
+         camerasPosition: 'right',
       });
 
       // Pubsub - listen for event: Matterport loaded & unloaded ::
