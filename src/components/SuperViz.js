@@ -23,7 +23,6 @@ const SuperViz = (function () {
          },
          roomId: roomid,
          defaultAvatars: true,
-         environment: 'dev',
          enableFollow: true,
          enableGoTo: true,
          enableGather: true,
