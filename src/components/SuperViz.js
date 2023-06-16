@@ -28,7 +28,7 @@ const SuperViz = (function () {
          enableGoTo: true,
          enableGather: true,
          camsOff: false,
-         layoutPosition: 'center',
+         layoutPosition: 'right',
          camerasPosition: 'right',
       });
 
