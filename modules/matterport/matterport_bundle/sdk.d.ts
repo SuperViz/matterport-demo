@@ -304,6 +304,75 @@ export declare namespace Asset {
 		data: VrColorplanMetadata;
 		imageDataUrls: string[];
 	};
+	/**
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	interface IAttachment {
+		id: string;
+		created: Date;
+		mediaType: MediaType;
+		category: AttachmentCategory;
+		parentId?: string;
+		parentType: ParentType;
+		filename?: string;
+		bytes?: number;
+		mimeType?: string;
+		/** source url - prefer `url.get()` over this. */
+		src: string;
+		/** expiring url */
+		url: ExpiringResource<string>;
+		/** expiring thumbnail url */
+		thumbnailUrl: ExpiringResource<string>;
+		height: number;
+		width: number;
+	}
+	/**
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	enum MediaType {
+		IMAGE = "image",
+		PDF = "pdf",
+		VIDEO = "video",
+		RICH = "rich",
+		ZIP = "zip",
+		TEXT = "text",
+		AUDIO = "audio",
+		MODEL = "model",
+		APPLICATION = "application"
+	}
+	/**
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	enum AttachmentCategory {
+		EXTERNAL = "external",
+		UPLOAD = "upload",
+		SANDBOX = "sandbox"
+	}
+	/**
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	enum ParentType {
+		COMMENT = "comment",
+		MATTERTAG = "mattertag"
+	}
+	/**
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	type ExpiringResource<T> = {
+		get(): Promise<T>;
+		onStale?: () => Promise<void>;
+		validUntil: Date | null;
+	};
 }
 export interface Asset {
 	/**
@@ -335,6 +404,22 @@ export interface Asset {
 	 * @introduced 3.1.68.12-7-g858688944a
 	 */
 	registerTexture(id: string, iconSrc: string): Promise<void>;
+	/**
+	 * Gets an asset by specified ID. Throws an error if no
+	 * asset with the desired ID exists.
+	 * ```
+	 * mpSdk.Asset.getAssetById('your-asset-id')
+	 *   .then(async function(asset){
+	 *     console.log('Asset URL is', await asset.url.get());
+	 *   });
+	 * ```
+	 * @return A promise that resolves with the desired asset.
+	 *
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	getAssetById(id: string): Promise<Asset.IAttachment>;
 }
 export declare namespace Mode {
 	enum Mode {
@@ -3387,7 +3472,7 @@ export interface Tag {
 	 * ```typescript
 	 * mpSdk.Tag.open(tagId);
 	 *
-	 * // if the tag has had its `dock` option removed through a call to [[Tag.allowAction]], it can be `force`d open
+	 * // if the tag has had its `dock` option removed through a call to `Tag.allowAction`, it can be `force`d open
 	 * mpSdk.Tag.allowAction(tagId, {
 	 *   opening: false,
 	 * });
@@ -3482,7 +3567,7 @@ export interface Tag {
 	 * **Note**: these changes are not persisted between refreshes of Showcase. They are only valid for the current browser session.
 	 *
 	 * ```typescript
-	 * // change the icon of the Tag using the id used in a previous [[Asset.registerTexture]] call
+	 * // change the icon of the Tag using the id used in a previous `Asset.registerTexture` call
 	 * mpSdk.Tag.editIcon(id, 'customIconId');
 	 * ```
 	 *
@@ -3940,6 +4025,43 @@ export declare interface Tour {
 	 */
 	transition: IObservable<Tour.CurrentTransitionData>;
 }
+export declare namespace View {
+	type View = {
+		/** the unique id of the view */
+		id: string;
+		/** the human-readable name of the view */
+		name: string;
+	};
+}
+export interface View {
+	/**
+	 * The currently active view
+	 *
+	 * ```typescript
+	 * mpSdk.View.current.subscribe((currentView) => {
+	 *   console.log('the currently active view is', currentView.name);
+	 * });
+	 * ```
+	 * @earlyaccess
+	 */
+	current: IObservable<View.View>;
+	/**
+	 * All views associated with the current space.
+	 *
+	 * ```typescript
+	 * mpSdk.View.views.subscribe({
+	 *   onAdded(index, view, collection) {
+	 *     console.log('a view with id', view.id, 'named', view.name);
+	 *   },
+	 *   onCollectionUpdated(collection) {
+	 *     console.log('all views', collection);
+	 *   },
+	 * });
+	 * ```
+	 * @earlyaccess
+	 */
+	views: IObservableMap<View.View>;
+}
 interface Emitter {
 	/** Start listening for an event */
 	on: typeof on;
@@ -3994,13 +4116,14 @@ export declare type CommonMpSdk = {
 	Tag: Tag;
 	Test: Test;
 	Tour: Tour;
+	View: View;
 	on: typeof on;
 	off: typeof off;
 	disconnect: typeof disconnect;
 };
 export declare namespace CommonMpSdk {
 	export { Color, ConditionCallback, Dictionary, ICondition, IMapObserver, IObservable, IObservableMap, IObserver, ISubscription, ObserverCallback, Orientation, Rotation, Size, Vector2, Vector3, };
-	export { App, Asset, Camera, Conversion, Floor, Graph, Label, Link, Mattertag, Measurements, Mode, Model, OAuth, Pointer, Renderer, Room, Sensor, Settings, Sweep, Tag, Tour, };
+	export { App, Asset, Camera, Conversion, Floor, Graph, Label, Link, Mattertag, Measurements, Mode, Model, OAuth, Pointer, Renderer, Room, Sensor, Settings, Sweep, Tag, Tour, View, };
 }
 /**
  * The Scene namespace is currently only available for Bundle SDK distributions.
