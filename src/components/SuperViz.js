@@ -48,11 +48,7 @@ const SuperViz = (function () {
       plugin = new window.MatterportPlugin(payload.sdk);
 
       matterportPluginInstance = sdk.loadPlugin(plugin, {
-         avatarConfig: {
-            height: 0,
-            scale: 1,
-            laserOrigin: { x: 0.2, y: -0.2, z: 0 },
-         },
+         avatarConfig: {},
          isAvatarsEnabled: true,
          isLaserEnabled: true,
          isNameEnabled: true,
