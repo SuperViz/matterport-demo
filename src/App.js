@@ -45,18 +45,13 @@ class App {
       });
 
       // sync engine - check if there is content already loaded in the meetingroom ::
-      superviz_sdk.fetchSyncProperty(SuperViz.CONTENT_CHANGED).then(
-         (value) => {
-            if (value === undefined) {
-               PubSub.publish(Menu.ITEM_CLICKED, 'v4LWLiLDm3s');
-            } else {
-               PubSub.publish(Menu.ITEM_CLICKED, value.data);
-            }
-         },
-         (reason) => {
-            console.error('error fetching data ', reason);
-         }
-      );
+      superviz_sdk.fetchSyncProperty(SuperViz.CONTENT_CHANGED)
+          .then((value) => {
+            PubSub.publish(Menu.ITEM_CLICKED, value.data);
+          })
+          .catch(() => {
+             PubSub.publish(Menu.ITEM_CLICKED, 'v4LWLiLDm3s')
+          });
 
       // show content ::
       this.loaderSection.classList.add('hide');
