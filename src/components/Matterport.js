@@ -82,7 +82,8 @@ class Matterport {
    }
 
    destroyMatterport() {
-      sdk?.disconnect();
+      if (!sdk) return;
+      sdk.disconnect();
       if (!showcase) return;
 
       showcase.removeEventListener('load', loadListener);

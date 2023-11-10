@@ -18,3 +18,22 @@
  * TO THE EXTENT PERMITTED UNDER APPLICABLE LAW UNDER NO CIRCUMSTANCES, INCLUDING, BUT NOT LIMITED TO, NEGLIGENCE, SHALL MATTERPORT OR ITS AFFILIATES OR LICENSORS BE LIABLE FOR ANY CONSEQUENTIAL, EXEMPLARY, PUNITIVE, SPECIAL, INCIDENTAL OR OTHER INDIRECT DAMAGES, EVEN IF MATTERPORT OR A MATTERPORT AUTHORIZED REPRESENTATIVE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. APPLICABLE LAW MAY NOT ALLOW SOME OR ALL OF THIS LIMITATION OF LIABILITY, SO IT MAY NOT APPLY TO YOU.
  *
  */
+
+/*!
+Custom build of Typr.ts (https://github.com/fredli74/Typr.ts) for use in Troika text rendering.
+Original MIT license applies: https://github.com/fredli74/Typr.ts/blob/master/LICENSE
+*/
+
+/*!
+Custom bundle of @unicode-font-resolver/client v1.0.2 (https://github.com/lojjic/unicode-font-resolver)
+for use in Troika text rendering. 
+Original MIT license applies
+*/
+
+/*!
+Custom bundle of woff2otf (https://github.com/arty-name/woff2otf) with fflate
+(https://github.com/101arrowz/fflate) for use in Troika text rendering. 
+Original licenses apply: 
+- fflate: https://github.com/101arrowz/fflate/blob/master/LICENSE (MIT)
+- woff2otf.js: https://github.com/arty-name/woff2otf/blob/master/woff2otf.js (Apache2)
+*/

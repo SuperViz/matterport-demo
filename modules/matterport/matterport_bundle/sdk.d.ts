@@ -3,16 +3,16 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 
-export declare type Vector2 = {
+export type Vector2 = {
 	x: number;
 	y: number;
 };
-export declare type Vector3 = {
+export type Vector3 = {
 	x: number;
 	y: number;
 	z: number;
 };
-export declare type Rotation = {
+export type Rotation = {
 	x: number;
 	y: number;
 	z?: number;
@@ -20,12 +20,12 @@ export declare type Rotation = {
 /**
  * An orientation described with Euler-like angles in degrees.
  */
-export declare type Orientation = {
+export type Orientation = {
 	yaw: number;
 	pitch: number;
 	roll: number;
 };
-export declare type Size = {
+export type Size = {
 	w: number;
 	h: number;
 };
@@ -33,7 +33,7 @@ export declare type Size = {
  * An RGB represenation of a color.
  * Each property is normalized to the range [0, 1]
  */
-export declare type Color = {
+export type Color = {
 	r: number;
 	g: number;
 	b: number;
@@ -53,7 +53,7 @@ export interface ISubscription {
  * The functional style version of the [[IObserver]]
  * @param <DataT> The type of the data being observed.
  */
-export declare type ObserverCallback<DataT> = (data: DataT) => void;
+export type ObserverCallback<DataT> = (data: DataT) => void;
 /**
  * An observer that can be subscribed to changes of an [[IObservable]]
  *
@@ -71,7 +71,7 @@ export interface IObserver<DataT> {
  * The functional style version of the [[ICondition]]
  * @param <DataT> The type of the data to check conditions on.
  */
-export declare type ConditionCallback<DataT> = (data: DataT) => boolean;
+export type ConditionCallback<DataT> = (data: DataT) => boolean;
 /**
  * An observer-like object that describes a condition to wait for on an [[IObservable]]
  *
@@ -397,7 +397,7 @@ export interface Asset {
 	 * ```
 	 *
 	 * @param id A user specified string to use as a lookup of this texture
-	 * @param iconSrc The src of the icon, like the src of an <img>
+	 * @param iconSrc The src of the icon, like the src of an \<img>
 	 *
 	 * @embed
 	 * @bundle
@@ -420,6 +420,14 @@ export interface Asset {
 	 * @experimental
 	 */
 	getAssetById(id: string): Promise<Asset.IAttachment>;
+	/**
+	 * Refresh assets from server, ensuring that all attachments are up to date.
+	 *
+	 * @hidden
+	 * @internal
+	 * @experimental
+	 */
+	refreshAssets(): Promise<void>;
 }
 export declare namespace Mode {
 	enum Mode {
@@ -478,7 +486,7 @@ export interface Mode {
 	 * const mode = mpSdk.Mode.Mode.FLOORPLAN;
 	 * const position = {x: 0, y: 0, z: 0};
 	 * const rotation = {x: -90, y: 0};
-	 * const transition = mpSdk.Mode.Transition.FLY;
+	 * const transition = mpSdk.Mode.TransitionType.FLY;
 	 * const zoom = 5;
 	 *
 	 * mpSdk.Mode.moveTo(mode, {
@@ -867,9 +875,24 @@ export declare namespace Floor {
 		/** @event */
 		CHANGE_END = "floors.changeend"
 	}
+	namespace Conversion {
+		/**
+		 * Generate a map between v2 IDs and v1 IDs
+		 *
+		 * This method will help with migration between IDs used for floors.
+		 *
+		 * ```
+		 * const mapping = await mpSdk.Floor.Conversion.createIdMap();
+		 * ```
+		 *
+		 * @param invert?: boolean - if passed, return map of v1->v2 instead
+		 */
+		function createIdMap(invert?: boolean): Promise<Dictionary<string>>;
+	}
 }
 export interface Floor {
 	Event: typeof Floor.Event;
+	Conversion: typeof Floor.Conversion;
 	/**
 	 * This function returns the state of all floors.
 	 *
@@ -1532,13 +1555,19 @@ export declare namespace Link {
 	 */
 	enum OpenPolicy {
 		/** Use the default behavior for the associated link type */
-		DEFAULT = "link.openpolicy.deafult",
+		DEFAULT = "link.openpolicy.default",
 		/** Open a new tab or window */
 		NEW_WINDOW = "link.openpolicy.newwindow",
 		/** Open in the current iframe */
 		SAME_FRAME = "link.openpolicy.sameframe",
 		/** Navigate the window that is the current embedder of Showcase */
 		CURRENT_WINDOW = "link.openpolicy.current"
+	}
+	enum DestinationPolicy {
+		/** Navigate to the default destination for links; likely the Showcase embedder's domain */
+		DEFAULT = "link.destination.default",
+		/** Navigate directly to the Showcase of a Matterport space */
+		MATTERPORT = "link.destination.matterport"
 	}
 	type CreateLinkOptions = {
 		/** The list of URL parameters to include in the share link */
@@ -1549,12 +1578,17 @@ export declare namespace Link {
 		 * An optional template for the link to use when the policy is not set to `SAME_FRAME`,
 		 * that will have any `${[param]}` substrings interpolated using the current set of URL parameters.
 		 *
-		 * If ${[param]} is included in the path of the URL, it will be replaced by the current URL parameter's value or undefined (`${m}/show`: `abc123/show`).
-		 * If ${[param]} is included in the search parameters of the URL, it and it's value wil be appended ot the URL (`${m}`: `&m=abc123`).
-		 * URL parameters that are unset will be appended without a value. (`${unset}`: `&unset`)
+		 * If `${[param]}` is included in the path of the URL, it will be replaced by the current URL parameter's value or undefined (`${m}/show`: `abc123/show`).
 		 *
-		 * As an example, the string `"https://my.domain.com/${m}/show.html?${play}${unset}"` interpolated at the URL `https://my.domain.com/show/?m=abc123&play=1`
-		 * will result in `"https://my.domain.com/abc123/show.html?play=1&unset"`.
+		 * If `${[param]}` is included in the search parameters of the URL, it and it's value wil be appended ot the URL (`${m}`: `m=abc123`).
+		 *
+		 * URL parameters that are unset will be appended without a value. (`${unset}`: `unset`)
+		 *
+		 * Note: `${m}` or `${model} are special cases in model links.
+		 * Instead of the current window's "model" param, the model ID from the link will be used instead.
+		 *
+		 * As an example, the string `"https://my.domain.com/${m}/show.html?${play}&${unset}"` interpolated at the URL `https://my.domain.com/show/?m=abc123&play=1`
+		 * will result in a URL like `"https://my.domain.com/abc123/show.html?play=1&unset&m=abc123"`.
 		 */
 		templateHref: string;
 	};
@@ -1611,7 +1645,8 @@ export interface Link {
 	 * @embed
 	 * @bundle 3.1.60.12-32-g4572017c98
 	 */
-	setModelLinkPolicy(policy: Link.OpenPolicy, options?: Partial<Link.OpenPolicyOptions>): void;
+	setModelLinkPolicy(policy: Link.OpenPolicy, options?: Partial<Link.OpenPolicyOptions>): Promise<void>;
+	setModelLinkPolicy(policy: Link.OpenPolicy, destination: Link.DestinationPolicy): Promise<void>;
 	/**
 	 * Change the behavior of clicking a link to a location within the current model.
 	 *
@@ -1619,7 +1654,7 @@ export interface Link {
 	 * // when clicking a link with a location within the current model, open a new window with the model at the location
 	 * // instead of navigating the current model to the new location
 	 * sdk.Link.setNavigationLinkPolicy(sdk.Link.OpenPolicy.NEW_WINDOW, {
-	 *   templateHref: 'https://example.com/${m}/show.html?'),
+	 *   templateHref: 'https://example.com/${m}/show.html?',
 	 * });
 	 *
 	 * // revert the navigation link behavior to the default
@@ -1632,7 +1667,7 @@ export interface Link {
 	 * @embed
 	 * @bundle 3.1.60.12-32-g4572017c98
 	 */
-	setNavigationLinkPolicy(policy: Link.OpenPolicy, options?: Partial<Link.OpenPolicyOptions>): void;
+	setNavigationLinkPolicy(policy: Link.OpenPolicy, options?: Partial<Link.OpenPolicyOptions>): Promise<void>;
 	/**
 	 * Change the behavior of clicking a link to a page from the same origin as the one hosting Showcase.
 	 *
@@ -1649,7 +1684,7 @@ export interface Link {
 	 * @embed
 	 * @bundle 3.1.60.12-32-g4572017c98
 	 */
-	setSameOriginLinkPolicy(policy: Link.OpenPolicy): void;
+	setSameOriginLinkPolicy(policy: Link.OpenPolicy): Promise<void>;
 	/**
 	 * Change the behavior of clicking a link to a different origin.
 	 *
@@ -1665,7 +1700,7 @@ export interface Link {
 	 * @embed
 	 * @bundle 3.1.60.12-32-g4572017c98
 	 */
-	setExternalLinkPolicy(openInNewWindow: boolean): void;
+	setExternalLinkPolicy(openInNewWindow: boolean): Promise<void>;
 }
 export declare namespace Mattertag {
 	type MattertagData = {
@@ -1972,7 +2007,7 @@ export interface Mattertag {
 	 * **Note**: It is recommended to host your own images to mitigate cross origin limitations.
 	 *
 	 * @param iconId A user specified string to use as a lookup of this icon
-	 * @param iconSrc The src of the icon, like the src of an <img>
+	 * @param iconSrc The src of the icon, like the src of an \<img>
 	 *
 	 * @deprecated Use [[Asset.registerTexture]] instead
 	 */
@@ -2051,6 +2086,12 @@ export declare namespace Measurements {
 		sid: string;
 		/** The list of wold-space coordinates that compose this measurement */
 		points: Vector3[];
+		/** The total length of the measurement */
+		totalLength: number;
+		/** The length of each segment between consecutive pairs of points */
+		segmentLengths: number[];
+		/** The user-set "description" of this measurement */
+		label: string;
 	};
 	type State = {
 		active: boolean;
@@ -2204,12 +2245,39 @@ export declare namespace Sweep {
 		AUTO = "auto",
 		MANUAL = "manual"
 	}
+	namespace Conversion {
+		/**
+		 * Generate a map between v2 IDs and v1 IDs
+		 *
+		 * This method will help with migration between IDs used for sweeps.
+		 *
+		 * ```
+		 * const mapping = await mpSdk.Sweep.Conversion.createIdMap();
+		 * ```
+		 *
+		 * @param invert?: boolean - if passed, return map of v1->v2 instead
+		 */
+		function createIdMap(invert?: boolean): Promise<Dictionary<string>>;
+		/**
+		 * Return the label associated with the provided sweep ID
+		 *
+		 * The label is what's displayed for the sweep in the workshop
+		 *
+		 * ```
+		 * const label = mpSdk.Sweep.Conversion.getLabelFromId('abcdefghijklmno0123456789');
+		 * ```
+		 *
+		 * @param id
+		 */
+		function getLabelFromId(id: string): Promise<string>;
+	}
 }
 export interface Sweep {
 	Event: typeof Sweep.Event;
 	Transition: typeof Sweep.Transition;
 	Alignment: typeof Sweep.Alignment;
 	Placement: typeof Sweep.Placement;
+	Conversion: typeof Sweep.Conversion;
 	/**
 	 * An observable collection of sweep data that can be subscribed to.
 	 *
@@ -2331,6 +2399,38 @@ export interface Sweep {
 	 * @param sweepIds
 	 */
 	disable(...sweepIds: string[]): Promise<void>;
+	/**
+	 * Add specified sweep IDs to the neighbors array
+	 *
+	 * This method allows changing the sweep connectivitiy to enable navigation from `sweepId`
+	 * to all sweeps in the `toAdd` array. Note that we use V2 IDs for all arguments. Refer
+	 * to Conversion.createIdMap() if you need to convert from the legacy V1 IDs.
+	 *
+	 * ```
+	 * Sweep.addNeighbors("hn7etcuyffbmqkyp5e43axa0b", ["zr7ns1smp51zibx4s239di7wb"]);
+	 * ```
+	 *
+	 * @param sweepId: string - Sweep ID
+	 * @param toAdd: string[] - List of Sweep IDs to connect
+	 * @returns A promise to a list of all current neighbor IDs (v2)
+	 */
+	addNeighbors(sweepId: string, toAdd: string[]): Promise<string[]>;
+	/**
+	 * Remove specified sweep IDs from the neighbors array
+	 *
+	 * This method allows changing the sweep connectivitiy to prevent navigation from `sweepId`
+	 * to all sweeps in the `toRemove` array. Note that we use V2 IDs for all arguments. Refer
+	 * to Conversion.createIdMap() if you need to convert from the legacy V1 IDs.
+	 *
+	 * ```
+	 * Sweep.removeNeighbors("hn7etcuyffbmqkyp5e43axa0b", ["zr7ns1smp51zibx4s239di7wb"]);
+	 * ```
+	 *
+	 * @param sweepId: string - Sweep ID
+	 * @param toRemove: string[] - List of Sweep IDs to disconnect
+	 * @returns A promise to a list of all current neighbor IDs (v2)
+	 */
+	removeNeighbors(sweepId: string, toRemove: string[]): Promise<string[]>;
 }
 export declare namespace Model {
 	type ModelData = {
@@ -2702,8 +2802,23 @@ export declare namespace Room {
 		size: Vector3;
 		center: Vector3;
 	};
+	namespace Conversion {
+		/**
+		 * Generate a map between v2 IDs and v1 IDs
+		 *
+		 * This method will help with migration between IDs used for rooms.
+		 *
+		 * ```
+		 * const mapping = await mpSdk.Room.Conversion.createIdMap();
+		 * ```
+		 *
+		 * @param invert?: boolean - if passed, return map of v1->v2 instead
+		 */
+		function createIdMap(invert?: boolean): Promise<Dictionary<string>>;
+	}
 }
 export interface Room {
+	Conversion: typeof Room.Conversion;
 	/**
 	 * An observable to determine which rooms the player's camera is currently in.
 	 *
@@ -3056,6 +3171,10 @@ export declare namespace Tag {
 		/** The ids of the attachments currently attached to this tag */
 		attachments: string[];
 		keywords: string[];
+		/** Read-only Font Awesome id for icons set in workshop, e.g. "face-grin-tongue-squint"
+		 * This value does not change if [[Tag.editIcon]] is used. This value is an empty string if no fontId was set.
+		*/
+		fontId: string;
 	};
 	/**
 	 * Things such as media, etc that can be attached to a Tag.
@@ -3172,7 +3291,7 @@ export interface Tag {
 	 * ```typescript
 	 * mpSdk.Tag.attachments.subscribe({
 	 *   onAdded: function (index, item, collection) {
-	 *     console.log('An attachemnt was added to the collection', index, item, collection);
+	 *     console.log('An attachment was added to the collection', index, item, collection);
 	 *   },
 	 *   onCollectionUpdated(collection) {
 	 *     console.log('The entire collection of attachments', collection);
@@ -3312,7 +3431,7 @@ export interface Tag {
 	 *   },
 	 *   onUpdated(index, item, collection) {
 	 *     console.log('Tag updated in place in the collection', index, item, collection);
-	 *   }
+	 *   },
 	 *   onCollectionUpdated(collection) {
 	 *     console.log('The full collection of Tags looks like', collection);
 	 *   }
@@ -3763,6 +3882,32 @@ export interface Tag {
 	 */
 	toggleSharing(enable?: boolean): Promise<void>;
 }
+declare namespace Test {
+	namespace Sub {
+		/**
+		 * Call an asynchronous command with a parameter and get the same value back.
+		 * @param arg
+		 */
+		function echo(arg: string): Promise<string>;
+		/**
+		 * Call an asynchronous command with a parameter and get the same value back.
+		 * @param arg
+		 */
+		function echoAsync(arg: string): Promise<string>;
+		namespace Sub2 {
+			/**
+			 * Call an asynchronous command with a parameter and get the same value back.
+			 * @param arg
+			 */
+			function echo(arg: string): Promise<string>;
+			/**
+			 * Call an asynchronous command with a parameter and get the same value back.
+			 * @param arg
+			 */
+			function echoAsync(arg: string): Promise<string>;
+		}
+	}
+}
 interface Test {
 	/**
 	 * Call a synchronous command with a parameter and get the same value back.
@@ -3774,6 +3919,17 @@ interface Test {
 	 * @param arg
 	 */
 	echoAsync(arg: string): Promise<string>;
+	/**
+	 * A sub-namespace that simply namespaces and sub-namespaces the functions in this interface
+	 */
+	Sub: {
+		echo: typeof Test.Sub.echo;
+		echoAsync: typeof Test.Sub.echoAsync;
+		Sub2: {
+			echo: typeof Test.Sub.Sub2.echo;
+			echoAsync: typeof Test.Sub.Sub2.echoAsync;
+		};
+	};
 }
 /**
  * Sample custom tour.
@@ -4026,12 +4182,74 @@ export declare interface Tour {
 	transition: IObservable<Tour.CurrentTransitionData>;
 }
 export declare namespace View {
-	type View = {
-		/** the unique id of the view */
+	interface View {
+		/** the unique id of the View */
+		readonly id: string;
+		/** the human-readable name of the View */
+		readonly name: string;
+		/**
+		 * An iterator over the set of Layers associated with this View
+		 *
+		 * ```typescript
+		 * for (const layer of view.layers) {
+		 *   console.log(`${view.id} has layer ${layer.id}`);
+		 * }
+		 * ```
+		 */
+		readonly layers: IterableIterator<Layer>;
+		/**
+		 * Set this View as the currently active one.
+		 *
+		 * Only one View can be active at a time.
+		 *
+		 * ```typescript
+		 * const view: View; // ... acquired through previous usage of `mpSdk.View.views`
+		 * await view.setActive();
+		 * ```
+		 */
+		setActive(): Promise<void>;
+		/**
+		 * Add a Layer to this View
+		 *
+		 * ```typescript
+		 * view.addLayer(layer);
+		 * ```
+		 * @param layer
+		 */
+		addLayer(layer: Layer): void;
+		/**
+		 * Remove a Layer from this View
+		 *
+		 * ```typescript
+		 * view.removeLayer(layer);
+		 * ```
+		 * @param layer
+		 */
+		removeLayer(layer: Layer): void;
+		/**
+		 * Test if this View has a Layer associate with it
+		 *
+		 * ```typescript
+		 * if (view.hasLayer(layer)) {
+		 *   console.log(`${view.id} has layer ${layer.id}`);
+		 * }
+		 * ```
+		 * @param layer
+		 */
+		hasLayer(layer: Layer): void;
+	}
+	interface Layer {
+		/** the unique id of the Layer */
 		id: string;
-		/** the human-readable name of the view */
+		/** the human-readable name of the Layer */
 		name: string;
-	};
+		/**
+		 * Toggle this Layer's state to `active`.
+		 *
+		 * @param active Whether this Layer toggled on or off. If `active` is undefined, the state is flipped
+		 */
+		toggle(active?: boolean): Promise<void>;
+	}
 }
 export interface View {
 	/**
@@ -4061,6 +4279,32 @@ export interface View {
 	 * @earlyaccess
 	 */
 	views: IObservableMap<View.View>;
+	/**
+	 * All layers associated with the current space.
+	 *
+	 * Layers in inactive Views may not populate right away. Activating a View will trigger the Layers to populate.
+	 *
+	 * ```typescript
+	 * mpSdk.View.layers.subscribe({
+	 *   onAdded(index, layer, collection) {
+	 *     console.log('a layer with id', layer.id, 'named', layer.name);
+	 *   },
+	 *   onCollectionUpdated(collection) {
+	 *     console.log('all layers', collection);
+	 *   },
+	 * });
+	 * ```
+	 */
+	layers: IObservableMap<View.Layer>;
+	/**
+	 * Create a layer that can be later added to a View or Views
+	 *
+	 * ```typescript
+	 * const layer = await mpSdk.View.createLayer('my layer');
+	 * ```
+	 * @param name
+	 */
+	createLayer(name: string): Promise<View.Layer>;
 }
 interface Emitter {
 	/** Start listening for an event */
@@ -4093,7 +4337,7 @@ declare function on(event: Tour.Event.STEPPED, callback: (activeIndex: number) =
  * const sdk: CommonMpSdk = await window.MP_SDK.connect(...);
  * ```
  */
-export declare type CommonMpSdk = {
+export type CommonMpSdk = {
 	App: App;
 	Asset: Asset;
 	Camera: Camera;
@@ -5366,7 +5610,7 @@ interface R3F {
 /**
  * Options to provide when connecting the sdk
  */
-export declare type ConnectOptions = {
+export type ConnectOptions = {
 	/** A token to provide access to a model */
 	auth: string;
 	/**
@@ -5386,7 +5630,7 @@ export declare type ConnectOptions = {
  * const sdk: MpSdk = await bundleWindow.MP_SDK.connect(...);
  * ```
  */
-export declare type MpSdk = CommonMpSdk & {
+export type MpSdk = CommonMpSdk & {
 	Scene: Scene;
 	R3F: R3F;
 };
@@ -5415,7 +5659,7 @@ export declare namespace MpSdk {
  * showcaseWindow.MP_SDK.connect(showcaseWindow);
  * ```
  */
-export declare type ShowcaseBundleWindow = ((Window & typeof globalThis) | ShadowRoot) & {
+export type ShowcaseBundleWindow = ((Window & typeof globalThis) | ShadowRoot) & {
 	MP_SDK: MP_SDK;
 };
 /**
