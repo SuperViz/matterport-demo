@@ -25,7 +25,6 @@ const SuperViz = (function () {
             name: name,
          },
       });
-
       type = userType;
 
       realtime = new window.SuperVizRoom.Realtime();
@@ -61,6 +60,7 @@ const SuperViz = (function () {
 
    const loadPluginSDK = function (e, payload) {
       // App is ready and I'm connected to the SDK. Now init the Plugin ::
+
       matterportPresence = new Presence3D(payload.sdk, {
          avatarConfig: {},
          isAvatarsEnabled: true,
