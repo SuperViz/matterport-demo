@@ -1,11 +1,4 @@
 /*!
- * Determine if an object is a Buffer
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
-
-/*!
  * Matterport Showcase SDK
  *
  * © 2022 Matterport, Inc. All rights reserved.

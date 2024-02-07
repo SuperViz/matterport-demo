@@ -64,7 +64,7 @@
 <div id='unsupported-browser' class='hidden'>
 </div>
 <section id='app-container'>
-  <main>
+  <main aria-labelledby='loading-header'>
     <div id='canvas-container'>
       <div id='control-kit-wrapper'></div>
     </div>
@@ -78,7 +78,7 @@
             <circle r='44' cx='48' cy='48'></circle>
             <circle id='bar' r='44' cx='48' cy='48'></circle>
           </svg>
-          <div id='showcase-play' class='icon-play-unicode hidden'></div>
+          <button id='showcase-play' class='icon-play-unicode hidden' />
         </div>
         <div id='play-prompt' class='hidden'></div>
       </div>
@@ -96,7 +96,7 @@
   </main>
 </section>
 
-<script src='vendors/three/0.146.0/three.min.js'></script>
+<script src='vendors/three/0.151.3/three.min.js'></script>
 <script src='js/browser-check.js'></script>
 <script src='js/showcase.js'></script>
 <script>

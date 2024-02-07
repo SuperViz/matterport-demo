@@ -6,7 +6,7 @@ const url = new URL(document.URL);
 let userType = url.searchParams.get('user-type');
 let roomId = url.searchParams.get('roomId');
 let userId = Date.now().toPrecision(20);
-let superviz_sdk;
+let realtime;
 let currentContent;
 
 class App {
@@ -26,17 +26,17 @@ class App {
       if (userType == null) userType = 'host';
 
       // Initilize the SDK ::
-      SuperViz.init(userId, roomId === null ? '1' : roomId, '', userType);
+      SuperViz.init(userId, roomId === null ? '1' : roomId, ' ', userType);
 
       // Pubsub - listen for event: When I joined ::
       PubSub.subscribe(SuperViz.MY_PARTICIPANT_JOINED, this.onMyParticipantJoined.bind(this));
    }
 
    onMyParticipantJoined(e, payload) {
-      superviz_sdk = payload.sdk;
+      realtime = payload.realtime;
 
       // sync engine - listen for event: Matterport model changed ::
-      superviz_sdk.subscribe(SuperViz.CONTENT_CHANGED, (participant) => {
+      realtime.subscribe(SuperViz.CONTENT_CHANGED, (participant) => {
          if (participant[Object.keys(participant).length - 1].participantId != userId) {
             if (userType != 'host') {
                PubSub.publish(Menu.ITEM_CLICKED, participant[Object.keys(participant).length - 1].data);
@@ -44,14 +44,15 @@ class App {
          }
       });
 
-      // sync engine - check if there is content already loaded in the meetingroom ::
-      superviz_sdk.fetchSyncProperty(SuperViz.CONTENT_CHANGED)
-          .then((value) => {
+      realtime
+         .fetchHistory(SuperViz.CONTENT_CHANGED)
+         .then((value) => {
+            //console.log(value);
             PubSub.publish(Menu.ITEM_CLICKED, value.data);
-          })
-          .catch(() => {
-             PubSub.publish(Menu.ITEM_CLICKED, 'v4LWLiLDm3s')
-          });
+         })
+         .catch(() => {
+            PubSub.publish(Menu.ITEM_CLICKED, 'v4LWLiLDm3s');
+         });
 
       // show content ::
       this.loaderSection.classList.add('hide');
@@ -61,7 +62,7 @@ class App {
    changeProject(e, id) {
       // let sync engine know we updated the content ::
       if (currentContent != id) {
-         superviz_sdk.setSyncProperty(SuperViz.CONTENT_CHANGED, id);
+         realtime.publish(SuperViz.CONTENT_CHANGED, id);
       }
    }
 

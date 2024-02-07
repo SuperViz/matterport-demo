@@ -3,15 +3,19 @@ import Matterport from './Matterport.js';
 
 const SuperViz = (function () {
    // let ::
-   let sdk = null;
+   let room = null;
+   let video = null;
    let plugin = null;
-   let matterportPluginInstance = null;
+   let realtime = null;
+   let matterportPresence = null;
+   let type = null;
    // Consts ::
    const MY_PARTICIPANT_JOINED_SDK = 'my_participant_joined';
    const CONTENT_CHANGED_SDK = 'content_changed';
 
    const initSDK = async function (userId, roomid, name, userType) {
-      sdk = await SuperVizSdk.init(DEVELOPER_KEY, {
+      room = await window.SuperVizRoom.init(DEVELOPER_KEY, {
+         roomId: roomid,
          group: {
             id: '<GROUP-ID>',
             name: '<GROUP-NAME>',
@@ -19,44 +23,58 @@ const SuperViz = (function () {
          participant: {
             id: userId,
             name: name,
-            type: userType,
          },
-         roomId: roomid,
+         environment: 'dev',
+      });
+      type = userType;
+
+      realtime = new window.SuperVizRoom.Realtime();
+      realtime.subscribe(SuperVizRoom.RealtimeComponentEvent.REALTIME_STATE_CHANGED, onRealtimeInitiated);
+
+      room.addComponent(realtime);
+
+      PubSub.subscribe(Matterport.MATTERPORT_LOADED, loadPluginSDK);
+   };
+
+   const onRealtimeInitiated = function (state) {
+      video = new window.SuperVizRoom.VideoConference({
+         userType: type,
          defaultAvatars: true,
          enableFollow: true,
-         enableGoTo: true,
          enableGather: true,
-         camsOff: false,
-         layoutPosition: 'center',
-         camerasPosition: 'right',
+         enableGoTo: true,
+         collaborationMode: {
+            modalPosition: 'center',
+         },
       });
 
-      // Pubsub - listen for event: Matterport loaded & unloaded ::
-      PubSub.subscribe(Matterport.MATTERPORT_LOADED, loadPluginSDK);
-      PubSub.subscribe(Matterport.MATTERPORT_DESTROYED, unloadPluginSDK);
+      room.addComponent(video);
 
-      sdk.subscribe(SuperVizSdk.MeetingEvent.MY_PARTICIPANT_JOINED, onMyParticipantJoined);
+      video.subscribe(SuperVizRoom.MeetingEvent.MY_PARTICIPANT_JOINED, onMyParticipantJoined);
+      video.subscribe(SuperVizRoom.MeetingEvent.MY_PARTICIPANT_LEFT, onMyParticipantLeft);
    };
 
    const onMyParticipantJoined = function (participant) {
+      PubSub.publish(MY_PARTICIPANT_JOINED_SDK, { realtime: realtime, participant: participant });
       // publish that I've connected ::
-      PubSub.publish(MY_PARTICIPANT_JOINED_SDK, { sdk: sdk, participant: participant });
    };
 
    const loadPluginSDK = function (e, payload) {
       // App is ready and I'm connected to the SDK. Now init the Plugin ::
-      plugin = new window.MatterportPlugin(payload.sdk);
 
-      matterportPluginInstance = sdk.loadPlugin(plugin, {
+      matterportPresence = new Presence3D(payload.sdk, {
          avatarConfig: {},
          isAvatarsEnabled: true,
          isLaserEnabled: true,
          isNameEnabled: true,
       });
+
+      room.addComponent(matterportPresence);
    };
 
-   const unloadPluginSDK = function () {
-      sdk.unloadPlugin();
+   const onMyParticipantLeft = function () {
+      room.removeComponent(video);
+      room.removeComponent(matterportPresence);
    };
 
    // Public
