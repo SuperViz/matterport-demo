@@ -26,7 +26,6 @@ const SuperViz = (function () {
         id: userId,
         name: name,
       },
-      environment: "dev",
     });
     type = userType;
 
