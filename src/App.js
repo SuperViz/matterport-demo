@@ -62,7 +62,7 @@ class App {
 
         // publish to internal pubsub that we should load new content ::
         if (currentContent == undefined)
-          PubSub.publish("load_content", defaultModel);
+          PubSub.publish(SuperViz.CHANGE_CONTENT, defaultModel);
         else PubSub.publish(SuperViz.CHANGE_CONTENT, currentContent);
       })
       .catch(() => {

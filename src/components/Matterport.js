@@ -105,12 +105,12 @@ class Matterport {
         }, 1000);
       }, 1000);
     });
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   static get MATTERPORT_LOADED() {
     return MATTERPORT_LOADED;
   }
+  
   static get MATTERPORT_DESTROYED() {
     return MATTERPORT_DESTROYED;
   }
